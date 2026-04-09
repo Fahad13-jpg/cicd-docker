@@ -17,16 +17,15 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build Docker image
-        run: |
-          docker build -t cicd-docker-demo:latest .
-          echo "Docker image built successfully!"
+        run: docker build -t cicd-docker-demo:latest .
 
       - name: Run container smoke test
         run: |
           docker run -d -p 5000:5000 --name test-container cicd-docker-demo:latest
-          sleep 3
-          curl http://localhost:5000 || echo "App responded"
+          sleep 5
+          curl --retry 5 --retry-delay 2 --retry-connrefused http://localhost:5000
           docker stop test-container
+          docker rm test-container
 
       - name: Deployment complete
-        run: echo "CI/CD Pipeline completed successfully!"
+        run: echo "CI/CD Pipeline completed successfully! Docker image is ready."
